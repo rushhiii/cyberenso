@@ -30,10 +30,10 @@ No user text is sent to an API. The browser does all hashing, rendering, and
 history storage. An item in History links back to the editor with its local
 record ID.
 
-The current readable implementation uses Web Crypto SHA-256 for the local
-digest and preserves the original 60-path arc geometry. The original
-CyberEnsō bundle used a BLAKE2b digest; the bundled legacy code remains
-available as reference, but the live app does not load that compiled shell.
+The current readable implementation includes a compact browser BLAKE2b
+implementation and preserves the original 60-path arc geometry. This matches
+the digest algorithm and digit-stream flow in `assets/origin_hash.js` without
+loading the compiled legacy shell.
 
 ## Deployment
 

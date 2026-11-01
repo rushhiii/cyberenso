@@ -34,8 +34,8 @@ hand-made quality.
 1. The static pages share one responsive stylesheet and one browser module.
 2. The editor stores title, author, text, and direction in ordinary form
    state.
-3. The text is hashed in the browser with the Web Crypto SHA-256 API. The
-   digest bytes become the digit stream used by the original-style arc logic.
+3. The text is hashed in the browser with the original BLAKE2b algorithm. The
+   digest bytes become the digit stream used by the original arc logic.
 4. The renderer emits an SVG made from 60 layered `<path>` elements. Each path
    is an open, rounded arc rather than a perfect circle.
 5. The download action serializes that SVG directly. Saved work is stored in

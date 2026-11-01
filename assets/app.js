@@ -1,10 +1,70 @@
 const STORAGE_KEY = "cyberenso-history";
 const DEFAULT_CONTENT = "A quiet mind makes room.";
 
-async function hashText(text) {
-  const bytes = new TextEncoder().encode(text);
-  const digest = new Uint8Array(await crypto.subtle.digest("SHA-256", bytes));
-  return Array.from(digest).join("").split("").map(Number);
+const BLAKE2B_IV = [
+  0x6a09e667f3bcc908n, 0xbb67ae8584caa73bn, 0x3c6ef372fe94f82bn, 0xa54ff53a5f1d36f1n,
+  0x510e527fade682d1n, 0x9b05688c2b3e6c1fn, 0x1f83d9abfb41bd6bn, 0x5be0cd19137e2179n,
+];
+const BLAKE2B_SIGMA = [
+  [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15],
+  [14,10,4,8,9,15,13,6,1,12,0,2,11,7,5,3],
+  [11,8,12,0,5,2,15,13,10,14,3,6,7,1,9,4],
+  [7,9,3,1,13,12,11,14,2,6,5,10,4,0,15,8],
+  [9,0,5,7,2,4,10,15,14,1,11,12,6,8,3,13],
+  [2,12,6,10,0,11,8,3,4,13,7,5,15,14,1,9],
+  [12,5,1,15,14,13,4,10,0,7,6,3,9,2,8,11],
+  [13,11,7,14,12,1,3,9,5,0,15,4,8,6,2,10],
+  [6,15,14,9,11,3,0,8,12,2,13,7,1,4,10,5],
+  [10,2,8,4,7,6,1,5,15,11,9,14,3,12,13,0],
+];
+const MASK_64 = 0xffffffffffffffffn;
+function rotateRight(value, amount) { return ((value >> BigInt(amount)) | (value << BigInt(64 - amount))) & MASK_64; }
+function blake2b(input, outputLength = 32) {
+  const state = BLAKE2B_IV.slice();
+  state[0] ^= 0x01010000n ^ BigInt(outputLength);
+  const blocks = Math.max(1, Math.ceil(input.length / 128));
+  let offset = 0;
+  for (let block = 0; block < blocks; block++) {
+    const length = Math.min(128, input.length - offset);
+    const words = Array(16).fill(0n);
+    for (let i = 0; i < length; i++) words[i >> 3] |= BigInt(input[offset + i]) << BigInt((i & 7) * 8);
+    offset += length;
+    const working = state.concat(BLAKE2B_IV);
+    working[12] ^= BigInt(offset);
+    if (block === blocks - 1) working[14] ^= MASK_64;
+    const mix = (a, b, c, d, x, y) => {
+      working[a] = (working[a] + working[b] + x) & MASK_64;
+      working[d] = rotateRight(working[d] ^ working[a], 32);
+      working[c] = (working[c] + working[d]) & MASK_64;
+      working[b] = rotateRight(working[b] ^ working[c], 24);
+      working[a] = (working[a] + working[b] + y) & MASK_64;
+      working[d] = rotateRight(working[d] ^ working[a], 16);
+      working[c] = (working[c] + working[d]) & MASK_64;
+      working[b] = rotateRight(working[b] ^ working[c], 63);
+    };
+    for (let round = 0; round < 12; round++) {
+      const sigma = BLAKE2B_SIGMA[round % 10];
+      mix(0, 4, 8, 12, words[sigma[0]], words[sigma[1]]);
+      mix(1, 5, 9, 13, words[sigma[2]], words[sigma[3]]);
+      mix(2, 6, 10, 14, words[sigma[4]], words[sigma[5]]);
+      mix(3, 7, 11, 15, words[sigma[6]], words[sigma[7]]);
+      mix(0, 5, 10, 15, words[sigma[8]], words[sigma[9]]);
+      mix(1, 6, 11, 12, words[sigma[10]], words[sigma[11]]);
+      mix(2, 7, 8, 13, words[sigma[12]], words[sigma[13]]);
+      mix(3, 4, 9, 14, words[sigma[14]], words[sigma[15]]);
+    }
+    for (let i = 0; i < 8; i++) state[i] = (state[i] ^ working[i] ^ working[i + 8]) & MASK_64;
+  }
+  const output = new Uint8Array(outputLength);
+  for (let i = 0; i < outputLength; i++) output[i] = Number((state[i >> 3] >> BigInt((i & 7) * 8)) & 0xffn);
+  return output;
+}
+function hashText(text) {
+  const digest = blake2b(new TextEncoder().encode(text), 32);
+  const digits = Array.from(digest).join("").split("").map(Number);
+  const skipZeros = randomInt(0, 6);
+  let removed = 0;
+  return digits.filter((digit) => digit !== 0 || removed++ < skipZeros);
 }
 
 function randomInt(min, max) {
@@ -27,7 +87,7 @@ async function createSvg(text, reverse = false) {
   const arc = (currentRadius, start, end, offset) => {
     const first = point(start, currentRadius, offset);
     const second = point(end, currentRadius, offset);
-    const largeArc = end - start <= 180 ? 0 : 1;
+    const largeArc = start - end <= 180 ? 0 : 1;
     return `M ${first.x} ${first.y} A ${currentRadius} ${currentRadius} 0 ${largeArc} 0 ${second.x} ${second.y}`;
   };
   for (let i = 0; i < 60; i++) {
@@ -35,8 +95,8 @@ async function createSvg(text, reverse = false) {
     let start;
     let end;
     if (reverse) {
-      start = 360 - 0.1 + digit * 0.4;
-      end = digit === 0 ? 310 - randomInt(-20, 10) : 170 - 35 * digit + randomInt(-30, 20);
+      end = 360 - 0.1 + digit * 0.4;
+      start = digit === 0 ? 310 - randomInt(10, -20) : 170 - 35 * digit + randomInt(20, -30);
       if (digit !== 0 && start < 10) start = randomInt(20, 30);
     } else {
       start = 2.9 + digit * 0.4;
