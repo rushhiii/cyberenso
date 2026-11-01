@@ -1,9 +1,97 @@
 <!doctype html>
 <html lang="en">
-<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="description" content="Create a digest-driven digital Ensō locally in your browser."><title>Create — CyberEnsō</title><link rel="stylesheet" href="assets/app.css"></head>
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="Create a digest-driven digital Ensō locally in your browser." />
+  <title>Create — CyberEnsō</title>
+  <link rel="stylesheet" href="assets/app.css" />
+</head>
+
 <body>
-  <header class="shell nav"><a class="brand" href="index.html">Cyber<span>Ensō</span></a><button class="menu" aria-label="Toggle navigation">☰</button><nav class="nav-links"><a href="index.html">Home</a><a class="active" href="create.html">Create</a><a href="history.html">History</a><a href="about.html">About</a></nav></header>
-  <main class="shell"><section class="page-title"><p class="eyebrow">The studio</p><h1>Make your mark.</h1><p>Write something true. The same words always return the same gesture, so your Ensō can be revisited.</p></section>
-    <section class="editor-layout"><div class="canvas-card"><div id="enso"></div></div><form class="panel" id="editor-form"><label for="title">Title</label><input id="title" placeholder="A title for this moment"><label for="author">Author</label><input id="author" placeholder="Your name"><label for="content">Content</label><textarea id="content" placeholder="Write a poem, thought, or observation...">A quiet mind makes room.</textarea><div class="form-actions"><button class="button" type="button" id="save">Save to history</button><button class="button ghost" type="button" id="download-svg">Download SVG</button><button class="button ghost" type="button" id="reverse">Change direction</button><button class="button ghost" type="button" id="reset">Reset</button></div><p class="meta" id="status"></p></form></section>
-  </main><footer class="shell footer"><span>Your text is processed locally in this browser.</span><button class="theme-toggle" id="theme-toggle">Dark</button></footer><script src="assets/app.js?v=dark3"></script>
-</body></html>
+  <header class="shell nav">
+    <a class="brand" href="index.html">Cyber<span>Ensō</span></a><button class="menu"
+      aria-label="Toggle navigation">☰</button>
+    <nav class="nav-links">
+      <a href="index.html">Home</a><a class="active" href="create.html">Create</a><a href="history.html">History</a><a
+        href="about.html">About</a><a href="https://github.com/rushhiii/cyberenso" target="_blank"
+        rel="noreferrer">GitHub ↗</a>
+    </nav>
+  </header>
+  <main class="shell">
+    <section class="page-title">
+      <p class="eyebrow">The studio</p>
+      <h1>Make your mark.</h1>
+      <p>
+        Write something true. Your words guide the gesture, while small brush
+        variations keep each rendering organic.
+      </p>
+    </section>
+    <section class="editor-layout">
+      <div class="canvas-card">
+        <div id="enso"></div>
+      </div>
+      <form class="panel" id="editor-form">
+        <label for="title">Title</label><input id="title" placeholder="A title for this moment" /><label
+          for="author">Author <span class="field-help">optional</span></label><input id="author"
+          placeholder="Your name (optional)" /><label for="attribution">Corner text</label><select id="attribution">
+          <option value="none">No corner text</option>
+          <option value="author">Author only</option>
+          <option value="author-title">Author and title</option>
+          <option value="author-first">Author and first line</option>
+          <option value="author-full">Author and full quote</option>
+        </select><label for="content">Content</label><textarea id="content"
+          placeholder="Write a poem, thought, or observation...">
+A quiet mind makes room.</textarea>
+        <div class="color-panel">
+          <div class="color-heading">
+            <span>Palette</span><span class="field-help">live preview</span>
+          </div>
+          <div class="color-inputs">
+            <label for="ink-color">Ink<input id="ink-color" type="color" value="#000000" /></label><label
+              for="paper-color">Paper<input id="paper-color" type="color" value="#e8e3df" /></label>
+          </div>
+          <div class="palette-presets">
+            <button class="swatch" type="button" data-preset='{"ink":"#000000","paper":"#e8e3df"}'
+              aria-label="Ink on paper"></button><button class="swatch night" type="button"
+              data-preset='{"ink":"#f3efe7","paper":"#171717"}' aria-label="Light ink on night"></button><button
+              class="swatch rust" type="button" data-preset='{"ink":"#9d3f2f","paper":"#f4e3d2"}'
+              aria-label="Rust on warm paper"></button><button class="swatch ocean" type="button"
+              data-preset='{"ink":"#164e63","paper":"#dff4f2"}' aria-label="Ocean palette"></button><button
+              class="swatch violet" type="button" data-preset='{"ink":"#4c1d95","paper":"#f1e8ff"}'
+              aria-label="Violet palette"></button>
+          </div>
+        </div>
+        <div class="form-actions">
+          <button class="button" type="button" id="save">
+            Save to history
+          </button>
+          <button class="button ghost" type="button" id="reset">Reset</button>
+          <button class="button ghost" type="button" id="download-svg">
+            Download SVG</button><button class="button ghost" type="button" id="download-png">
+            Download PNG</button><button class="button ghost" type="button" id="reverse">
+            Change direction</button><button class="button ghost" type="button" id="quote">
+            Use a quote
+          </button>
+        </div>
+        <p class="meta" id="status"></p>
+      </form>
+    </section>
+  </main>
+  <footer class="shell footer">
+    <div>
+      <strong>CyberEnsō</strong><span>Your text stays in this browser.</span>
+    </div>
+    <div class="footer-links">
+      <a href="https://github.com/rushhiii/cyberenso" target="_blank" rel="noreferrer">GitHub</a><a
+        href="about.html">About</a><a href="history.html">History</a><button class="theme-toggle" id="theme-toggle"
+        aria-label="Switch to dark mode" title="Switch to dark mode">
+        ☾
+      </button>
+    </div>
+  </footer>
+  <script src="assets/app.js?v=corner7"></script>
+</body>
+
+</html>

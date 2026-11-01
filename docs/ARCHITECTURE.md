@@ -31,9 +31,15 @@ history storage. An item in History links back to the editor with its local
 record ID.
 
 The current readable implementation includes a compact browser BLAKE2b
-implementation and preserves the original 60-path arc geometry. This matches
-the digest algorithm and digit-stream flow in `assets/origin_hash.js` without
-loading the compiled legacy shell.
+implementation and preserves the original decimal digest digit stream,
+60-path layering, `Io` randomness, and `Vo` angle formulas. The original
+`Ro` SVG arc can resolve to a different circle center when enlarged, so the
+same original angles are sampled on a centered circular track. This keeps the
+hash behavior and brush variation faithful while producing the intended open
+Ensō silhouette at the larger presentation radius.
+
+Quote content is kept separately in `assets/quotes.json`; the editor loads it
+only when “Use a quote” is selected.
 
 ## Deployment
 

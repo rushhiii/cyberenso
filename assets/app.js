@@ -1,5 +1,13 @@
 const STORAGE_KEY = "cyberenso-history";
 const DEFAULT_CONTENT = "A quiet mind makes room.";
+const DEFAULT_COLORS = { ink: "#000000", paper: "#e8e3df" };
+function getThemeColors() {
+  const styles = getComputedStyle(document.documentElement);
+  return {
+    ink: styles.getPropertyValue("--enso-ink").trim() || DEFAULT_COLORS.ink,
+    paper: styles.getPropertyValue("--enso-paper").trim() || DEFAULT_COLORS.paper,
+  };
+}
 
 const BLAKE2B_IV = [
   0x6a09e667f3bcc908n, 0xbb67ae8584caa73bn, 0x3c6ef372fe94f82bn, 0xa54ff53a5f1d36f1n,
@@ -59,24 +67,51 @@ function blake2b(input, outputLength = 32) {
   for (let i = 0; i < outputLength; i++) output[i] = Number((state[i >> 3] >> BigInt((i & 7) * 8)) & 0xffn);
   return output;
 }
-function hashText(text) {
+function hashText(text, fixedSkipZeros) {
   const digest = blake2b(new TextEncoder().encode(text), 32);
   const digits = Array.from(digest).join("").split("").map(Number);
-  const skipZeros = randomInt(0, 6);
+  const skipZeros = fixedSkipZeros ?? randomInt(0, 6);
   let removed = 0;
-  return digits.filter((digit) => digit !== 0 || removed++ < skipZeros);
+  return {
+    digits: digits.filter((digit) => digit !== 0 || removed++ < skipZeros),
+    hex: Array.from(digest, (byte) => byte.toString(16).padStart(2, "0")).join(""),
+  };
 }
 
 function randomInt(min, max) {
   return Math.floor(Math.random() * (max - min)) + min;
 }
 
-async function createSvg(text, reverse = false) {
-  const digits = await hashText(text || "empty");
+function escapeXml(value) {
+  return String(value).replace(/[&<>"']/g, (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&apos;" })[char]);
+}
+function attributionText(mode, title, author, content) {
+  const name = author.trim() || "Anonymous";
+  const firstLineValue = (content.trim().split(/\r?\n/)[0] || "Untitled").trim();
+  const firstLine = firstLineValue.length > 34 ? `${firstLineValue.slice(0, 34).trimEnd()}...` : firstLineValue;
+  if (mode === "author") return `— ${name}`;
+  if (mode === "author-title") return `— ${name} (${title.trim() || "Untitled Ensō"})`;
+  if (mode === "author-first") return `— ${name} (${firstLine})`;
+  if (mode === "author-full") return `— ${name} (${content.trim() || "Untitled"})`;
+  return "";
+}
+function attributionSvg(text, color, size = 32) {
+  if (!text) return "";
+  const lines = text.match(new RegExp(`.{1,${size > 32 ? 48 : 58}}(?:\\s+|$)`, "g")) || [text];
+  return `<text x="1960" y="${1950 - (lines.length - 1) * size}" text-anchor="end" fill="${escapeXml(color)}" font-family="Manrope, sans-serif" font-size="${size}">${lines.map((line, index) => `<tspan x="1960" dy="${index ? size : 0}">${escapeXml(line.trim())}</tspan>`).join("")}</text>`;
+}
+
+async function createSvg(text, reverse = false, colors = DEFAULT_COLORS, attribution = "", variations = []) {
+  const { digits } = await hashText(text || "empty", variations[60] === undefined ? undefined : Math.floor(variations[60] * 6));
   const center = 1024;
-  const radius = 512;
+  const hasAttribution = Boolean(attribution);
+  const radius = hasAttribution ? 700 : 900;
   const radiusStep = radius * 0.005859375;
   const paths = [];
+  const vary = (min, max, index) => {
+    const seed = variations[index] ?? Math.random();
+    return Math.floor(seed * (max - min)) + min;
+  };
   const point = (angle, currentRadius, offset = 0) => {
     const radians = ((angle - 90 + offset) * Math.PI) / 180;
     return {
@@ -85,10 +120,13 @@ async function createSvg(text, reverse = false) {
     };
   };
   const arc = (currentRadius, start, end, offset) => {
-    const first = point(start, currentRadius, offset);
-    const second = point(end, currentRadius, offset);
-    const largeArc = start - end <= 180 ? 0 : 1;
-    return `M ${first.x} ${first.y} A ${currentRadius} ${currentRadius} 0 ${largeArc} 0 ${second.x} ${second.y}`;
+    const segments = 72;
+    const points = Array.from({ length: segments + 1 }, (_, index) => {
+      const angle = start + ((end - start) * index) / segments;
+      const { x, y } = point(angle, currentRadius, offset);
+      return `${x} ${y}`;
+    });
+    return `M ${points[0]} L ${points.slice(1).join(" L ")}`;
   };
   for (let i = 0; i < 60; i++) {
     const digit = digits[i % digits.length];
@@ -96,16 +134,20 @@ async function createSvg(text, reverse = false) {
     let end;
     if (reverse) {
       end = 360 - 0.1 + digit * 0.4;
-      start = digit === 0 ? 310 - randomInt(10, -20) : 170 - 35 * digit + randomInt(20, -30);
-      if (digit !== 0 && start < 10) start = randomInt(20, 30);
+      start = digit === 0
+        ? 310 - vary(10, -20, i)
+        : 170 - 35 * digit + vary(20, -30, i);
+      if (digit !== 0 && start < 10) start = vary(20, 30, i);
     } else {
-      start = 2.9 + digit * 0.4;
-      end = digit === 0 ? 50 + randomInt(-10, 20) : 190 + 17 * digit + randomInt(-20, 60);
-      if (digit !== 0 && end > 350) end = randomInt(330, 340);
+      start = 3 - 0.1 + digit * 0.4;
+      end = digit === 0
+        ? 50 + vary(-10, 20, i)
+        : 190 + 17 * digit + vary(-20, 60, i);
+      if (digit !== 0 && end > 350) end = vary(330, 340, i);
     }
     paths.push(`<path d="${arc(radius - i * radiusStep, start, end, reverse ? 80 : -130)}" />`);
   }
-  return `<svg viewBox="0 0 2048 2048" xmlns="http://www.w3.org/2000/svg" aria-label="Generated Ensō"><rect width="100%" height="100%" fill="var(--enso-paper, #e8e3df)"/><g fill="none" stroke="var(--enso-ink, #000000)" stroke-width="${radiusStep + 1}" stroke-linecap="round" shape-rendering="geometricPrecision">${paths.join("")}</g></svg>`;
+  return `<svg viewBox="0 0 2048 2048" xmlns="http://www.w3.org/2000/svg" aria-label="Generated Ensō"><rect width="100%" height="100%" fill="${colors.paper}"/><g fill="none" stroke="${colors.ink}" stroke-width="${radiusStep + 1}" stroke-linecap="round" shape-rendering="geometricPrecision">${paths.join("")}</g>${attributionSvg(attribution, colors.ink, hasAttribution ? 38 : 32)}</svg>`;
 }
 
 function getHistory() {
@@ -120,31 +162,119 @@ function download(name, content, type) {
   link.href = URL.createObjectURL(new Blob([content], { type }));
   link.download = name; link.click(); URL.revokeObjectURL(link.href);
 }
+async function downloadPng(name, svg, size = 2048) {
+  const image = new Image();
+  const url = URL.createObjectURL(new Blob([svg], { type: "image/svg+xml" }));
+  image.onload = () => {
+    const canvas = document.createElement("canvas");
+    canvas.width = size;
+    canvas.height = size;
+    canvas.getContext("2d").drawImage(image, 0, 0, size, size);
+    URL.revokeObjectURL(url);
+    const link = document.createElement("a");
+    link.download = name;
+    link.href = canvas.toDataURL("image/png");
+    link.click();
+  };
+  image.onerror = () => {
+    URL.revokeObjectURL(url);
+    throw new Error("Could not render the SVG as PNG.");
+  };
+  image.src = url;
+}
 function wireNav() {
   const menu = document.querySelector(".menu"), links = document.querySelector(".nav-links");
   if (menu) menu.addEventListener("click", () => links.classList.toggle("open"));
 }
 function initCreate() {
   const form = document.querySelector("#editor-form"); if (!form) return;
-  const title = document.querySelector("#title"), author = document.querySelector("#author"), content = document.querySelector("#content"), canvas = document.querySelector("#enso"), status = document.querySelector("#status");
+  const title = document.querySelector("#title"), author = document.querySelector("#author"), content = document.querySelector("#content"), attribution = document.querySelector("#attribution"), canvas = document.querySelector("#enso"), status = document.querySelector("#status");
+  const ink = document.querySelector("#ink-color"), paper = document.querySelector("#paper-color");
+  const historyId = new URLSearchParams(location.search).get("history");
+  const savedItem = historyId ? getHistory().find((entry) => entry.id === historyId) : null;
+  const initialColors = savedItem?.colors || getThemeColors();
+  const colors = { ...initialColors };
+  let customColors = Boolean(savedItem?.colors);
+  if (ink) ink.value = colors.ink;
+  if (paper) paper.value = colors.paper;
   let reverse = false;
-  const update = async () => { canvas.innerHTML = await createSvg(content.value, reverse); status.textContent = `${content.value.length} characters · digest-driven original arc geometry`; };
+  const variations = savedItem?.variations || Array.from({ length: 61 }, () => Math.random());
+  let baseKey = "";
+  let baseSvg = "";
+  const update = async () => {
+    const attributionValue = attributionText(attribution.value, title.value, author.value, content.value);
+    const geometryKey = JSON.stringify([content.value, reverse, colors.ink, colors.paper, Boolean(attributionValue)]);
+    if (geometryKey !== baseKey) baseKey = geometryKey;
+    baseSvg = await createSvg(content.value, reverse, colors, attributionValue, variations);
+    canvas.innerHTML = baseSvg;
+    canvas.parentElement.style.background = colors.paper;
+    const { hex } = hashText(content.value || "empty");
+    status.textContent = `${content.value.length} characters · BLAKE2b ${hex.slice(0, 12)}… · 60-layer circular geometry`;
+  };
+  document.addEventListener("cyberenso-theme-change", () => {
+    if (customColors) return;
+    Object.assign(colors, getThemeColors());
+    if (ink) ink.value = colors.ink;
+    if (paper) paper.value = colors.paper;
+    update();
+  });
   form.addEventListener("input", update);
+  attribution?.addEventListener("change", update);
+  ink?.addEventListener("input", () => { customColors = true; colors.ink = ink.value; update(); });
+  paper?.addEventListener("input", () => { customColors = true; colors.paper = paper.value; update(); });
+  document.querySelectorAll("[data-preset]").forEach((preset) => preset.addEventListener("click", () => {
+    const selected = JSON.parse(preset.dataset.preset);
+    customColors = true;
+    colors.ink = ink.value = selected.ink;
+    colors.paper = paper.value = selected.paper;
+    update();
+  }));
   document.querySelector("#reverse").addEventListener("click", () => { reverse = !reverse; update(); });
   document.querySelector("#reset").addEventListener("click", () => {
     title.value = "";
     author.value = "";
     content.value = DEFAULT_CONTENT;
+    attribution.value = "none";
+    customColors = false;
+    const themeColors = getThemeColors();
+    colors.ink = ink.value = themeColors.ink;
+    colors.paper = paper.value = themeColors.paper;
     reverse = false;
     update();
     status.textContent = "Editor reset to a new blank Ensō.";
   });
-  document.querySelector("#save").addEventListener("click", async () => { const item = { id: crypto.randomUUID(), title: title.value || "Untitled Ensō", author: author.value, content: content.value, svg: await createSvg(content.value, reverse), created: new Date().toISOString() }; saveHistory(item); status.textContent = "Saved to this browser's history."; });
+  document.querySelector("#save").addEventListener("click", async () => { const attributionMode = attribution.value; const item = { id: crypto.randomUUID(), title: title.value || "Untitled Ensō", author: author.value, content: content.value, attributionMode, variations, colors: { ...colors }, svg: await createSvg(content.value, reverse, colors, attributionText(attributionMode, title.value, author.value, content.value), variations), created: new Date().toISOString() }; saveHistory(item); status.textContent = "Saved to this browser's history."; });
   document.querySelector("#download-svg").addEventListener("click", () => download("cyberenso.svg", canvas.innerHTML, "image/svg+xml"));
+  document.querySelector("#download-png").addEventListener("click", async () => downloadPng("cyberenso.png", canvas.innerHTML));
+  document.querySelector("#quote").addEventListener("click", async () => {
+    const quotes = await fetch("assets/quotes.json").then((response) => {
+      if (!response.ok) throw new Error(`Could not load quotes (${response.status})`);
+      return response.json();
+    });
+    const quote = quotes[Math.floor(Math.random() * quotes.length)];
+    title.value = quote.title;
+    author.value = quote.author;
+    content.value = quote.content;
+    update();
+  });
   update();
 }
 function initHistory() {
   const grid = document.querySelector("#history-grid"); if (!grid) return;
+  const privateView = document.querySelector("#private-history");
+  const publicView = document.querySelector("#public-history");
+  document.querySelectorAll("[data-history-view]").forEach((button) => {
+    button.addEventListener("click", () => {
+      const isPublic = button.dataset.historyView === "public";
+      privateView.hidden = isPublic;
+      publicView.hidden = !isPublic;
+      document.querySelectorAll("[data-history-view]").forEach((tab) => {
+        const selected = tab === button;
+        tab.setAttribute("aria-selected", String(selected));
+        tab.classList.toggle("ghost", !selected);
+      });
+    });
+  });
   const items = getHistory();
   if (!items.length) { grid.innerHTML = `<div class="empty">No saved Ensō yet. Create one and press “Save to history”.</div>`; return; }
   grid.innerHTML = items.map((item) => `<article class="history-card">${item.svg}<h3>${escapeHtml(item.title)}</h3><p>${escapeHtml(item.author || "Anonymous")} · ${new Date(item.created).toLocaleDateString()}</p><a class="button ghost" href="create.html?history=${encodeURIComponent(item.id)}">Open in editor</a></article>`).join("");
@@ -154,18 +284,30 @@ function loadHistoryItem() {
   const id = new URLSearchParams(location.search).get("history"); if (!id) return;
   const item = getHistory().find((entry) => entry.id === id); if (!item) return;
   document.querySelector("#title").value = item.title; document.querySelector("#author").value = item.author; document.querySelector("#content").value = item.content;
+  const attribution = document.querySelector("#attribution");
+  if (attribution) attribution.value = item.attributionMode || "none";
+  if (item.colors) {
+    document.querySelector("#ink-color").value = item.colors.ink;
+    document.querySelector("#paper-color").value = item.colors.paper;
+  }
 }
 function initTheme() {
   const root = document.documentElement;
   const stored = localStorage.getItem("cyberenso-theme");
   if (stored === "dark") root.dataset.theme = "dark";
   const button = document.querySelector("#theme-toggle");
-  if (button) button.textContent = root.dataset.theme === "dark" ? "Light" : "Dark";
+  const updateThemeIcon = () => {
+    const dark = root.dataset.theme === "dark";
+    button.textContent = dark ? "☀" : "☾";
+    button.setAttribute("aria-label", dark ? "Switch to light mode" : "Switch to dark mode");
+    button.setAttribute("title", dark ? "Switch to light mode" : "Switch to dark mode");
+  };
+  if (button) updateThemeIcon();
   if (button) button.addEventListener("click", () => {
     root.dataset.theme = root.dataset.theme === "dark" ? "light" : "dark";
     localStorage.setItem("cyberenso-theme", root.dataset.theme);
-    button.textContent = root.dataset.theme === "dark" ? "Light" : "Dark";
-    if (document.querySelector("#editor-form")) document.querySelector("#editor-form").dispatchEvent(new Event("input"));
+    updateThemeIcon();
+    document.dispatchEvent(new Event("cyberenso-theme-change"));
   });
 }
 wireNav(); initTheme(); loadHistoryItem(); initCreate(); initHistory();

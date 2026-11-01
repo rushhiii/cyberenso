@@ -36,10 +36,14 @@ hand-made quality.
    state.
 3. The text is hashed in the browser with the original BLAKE2b algorithm. The
    digest bytes become the digit stream used by the original arc logic.
-4. The renderer emits an SVG made from 60 layered `<path>` elements. Each path
-   is an open, rounded arc rather than a perfect circle.
-5. The download action serializes that SVG directly. Saved work is stored in
-   browser `localStorage` and can be reopened from History.
+4. The renderer emits an SVG made from 60 layered `<path>` elements. The paths
+   follow a large, stable circular sweep, leaving a brush-like opening near
+   the lower edge instead of collapsing into a shallow U-shape.
+5. Choose custom ink and paper colors or use a palette preset. Optional corner
+   text can show the author, title, first line, or full quote. The download
+   actions export the selected mark as SVG or a 2048px PNG. Saved work,
+   including its colors and corner-text choice, is stored in browser
+   `localStorage` and can be reopened from History.
 
 This design keeps the output crisp at any size and makes the artwork easy to
 inspect: the generated SVG is the actual drawing, not a screenshot.
@@ -55,6 +59,7 @@ inspect: the generated SVG is the actual drawing, not a screenshot.
 ├── assets/
 │   ├── app.js                 # Hashing, SVG generation, and history logic
 │   ├── app.css                # Shared visual system and responsive layout
+│   ├── quotes.json             # Quote and poem source data for the editor
 │   ├── manifest.json          # PWA metadata
 │   └── icons and enso.png     # Favicons and social preview artwork
 ├── docs/
