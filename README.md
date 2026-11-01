@@ -64,12 +64,16 @@ inspect: the generated SVG is the actual drawing, not a screenshot.
 │   └── icons and enso.png     # Favicons and social preview artwork
 ├── docs/
 │   ├── ARCHITECTURE.md        # Runtime and deployment notes
+│   ├── HASHING.md             # BLAKE2b and geometry pipeline
 │   └── ENSO.md                # Cultural and visual background
 └── README.md
 ```
 
 The older exported bundle remains in `assets/` only as historical material;
 the live pages use `app.js` and do not depend on the old daily-image URLs.
+
+For a detailed explanation of the hashing and rendering pipeline, read
+[`docs/HASHING.md`](docs/HASHING.md).
 
 ## Run locally
 
