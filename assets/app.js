@@ -20,24 +20,41 @@ function random(seed) {
 
 function createSvg(text, reverse = false) {
   const rng = random(hashText(text || "empty"));
-  const center = 512;
-  const count = 34;
-  const base = 325;
-  const gap = reverse ? -1 : 1;
+  const digits = Array.from({ length: 32 }, () => Math.floor(rng() * 10));
+  const center = 1024;
+  const radius = 512;
+  const radiusStep = radius * 0.005859375;
   const paths = [];
-  for (let i = 0; i < count; i++) {
-    const radius = base + i * 3.2;
-    const start = (0.32 + rng() * .28) * Math.PI;
-    const sweep = (1.72 + rng() * .14) * Math.PI;
-    const end = start + gap * sweep;
-    const x1 = center + Math.cos(start) * radius;
-    const y1 = center + Math.sin(start) * radius;
-    const x2 = center + Math.cos(end) * radius;
-    const y2 = center + Math.sin(end) * radius;
-    const large = Math.abs(sweep) > Math.PI ? 1 : 0;
-    paths.push(`<path d="M ${x1.toFixed(2)} ${y1.toFixed(2)} A ${radius.toFixed(2)} ${radius.toFixed(2)} 0 ${large} ${gap > 0 ? 1 : 0} ${x2.toFixed(2)} ${y2.toFixed(2)}" />`);
+  const randomInt = (min, max) => Math.floor(rng() * (max - min)) + min;
+  const point = (angle, currentRadius, offset = 0) => {
+    const radians = ((angle - 90 + offset) * Math.PI) / 180;
+    return {
+      x: center + currentRadius * Math.cos(radians),
+      y: center + currentRadius * Math.sin(radians),
+    };
+  };
+  const arc = (currentRadius, start, end, offset) => {
+    const first = point(start, currentRadius, offset);
+    const second = point(end, currentRadius, offset);
+    const largeArc = reverse ? (end - start >= 180 ? 0 : 1) : (end - start <= 180 ? 0 : 1);
+    return `M ${first.x} ${first.y} A ${currentRadius} ${currentRadius} 0 ${largeArc} 0 ${second.x} ${second.y}`;
+  };
+  for (let i = 0; i < 60; i++) {
+    const digit = digits[i % digits.length];
+    let start;
+    let end;
+    if (reverse) {
+      end = 360 - 0.1 + digit * 0.4;
+      start = digit === 0 ? 310 - randomInt(-10, 20) : 170 - 35 * digit + randomInt(-20, 30);
+      if (digit !== 0 && start < 10) start = randomInt(20, 30);
+    } else {
+      start = 2.9 + digit * 0.4;
+      end = digit === 0 ? 50 + randomInt(-10, 20) : 190 + 17 * digit + randomInt(-20, 60);
+      if (digit !== 0 && end > 350) end = randomInt(330, 340);
+    }
+    paths.push(`<path d="${arc(radius - i * radiusStep, start, end, reverse ? 80 : -130)}" />`);
   }
-  return `<svg viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg" aria-label="Generated Ensō"><rect width="1024" height="1024" fill="#e8e2d8"/><g fill="none" stroke="#171714" stroke-width="3.2" stroke-linecap="round">${paths.join("")}</g></svg>`;
+  return `<svg viewBox="0 0 2048 2048" xmlns="http://www.w3.org/2000/svg" aria-label="Generated Ensō"><rect width="100%" height="100%" fill="#e8e3df"/><g fill="none" stroke="#000000" stroke-width="${radiusStep + 1}" stroke-linecap="round" shape-rendering="geometricPrecision">${paths.join("")}</g></svg>`;
 }
 
 function getHistory() {
@@ -60,11 +77,11 @@ function initCreate() {
   const form = document.querySelector("#editor-form"); if (!form) return;
   const title = document.querySelector("#title"), author = document.querySelector("#author"), content = document.querySelector("#content"), canvas = document.querySelector("#enso"), status = document.querySelector("#status");
   let reverse = false;
-  const update = () => { canvas.innerHTML = createSvg(`${title.value}\n${author.value}\n${content.value}`, reverse); status.textContent = `${content.value.length} characters · deterministic seed ${hashText(content.value).toString(16)}`; };
+  const update = () => { canvas.innerHTML = createSvg(content.value, reverse); status.textContent = `${content.value.length} characters · deterministic seed ${hashText(content.value).toString(16)}`; };
   form.addEventListener("input", update);
   document.querySelector("#reverse").addEventListener("click", () => { reverse = !reverse; update(); });
   document.querySelector("#reset").addEventListener("click", () => { form.reset(); reverse = false; update(); });
-  document.querySelector("#save").addEventListener("click", () => { const item = { id: crypto.randomUUID(), title: title.value || "Untitled Ensō", author: author.value, content: content.value, svg: createSvg(`${title.value}\n${author.value}\n${content.value}`, reverse), created: new Date().toISOString() }; saveHistory(item); status.textContent = "Saved to this browser's history."; });
+  document.querySelector("#save").addEventListener("click", () => { const item = { id: crypto.randomUUID(), title: title.value || "Untitled Ensō", author: author.value, content: content.value, svg: createSvg(content.value, reverse), created: new Date().toISOString() }; saveHistory(item); status.textContent = "Saved to this browser's history."; });
   document.querySelector("#download-svg").addEventListener("click", () => download("cyberenso.svg", canvas.innerHTML, "image/svg+xml"));
   update();
 }
