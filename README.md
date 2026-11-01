@@ -15,6 +15,14 @@ stroke. It can represent emptiness, fullness, imperfection, movement, and the
 state of the person who made it. The open gap is meaningful too: the circle
 does not need to be geometrically complete to feel complete.
 
+The term means “circular form” and belongs to the tradition of Japanese Zen
+art, ink painting, and calligraphy. The brush and ink movement are related to
+Japanese calligraphy and *sumi-e*. Drawing an ensō can be a contemplative
+practice sometimes called *hitsuzendō*, “the way of the brush.” An open
+circle may suggest movement and the beauty of imperfection; a closed circle
+may suggest completeness. See the [Wikipedia article on Ensō](https://en.wikipedia.org/wiki/Ens%C5%8D)
+for an overview and references.
+
 CyberEnsō translates that idea into a deterministic digital process. The
 content is hashed, and the hash becomes the seed for a family of slightly
 different arcs. A small change in the input creates a different mark, while

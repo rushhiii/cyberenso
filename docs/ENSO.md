@@ -1,5 +1,25 @@
 # The ensō and the design
 
+## Origin and meaning
+
+The word *ensō* (円相) means “circular form.” In Zen art, it describes a
+circle drawn by hand in one or two uninhibited brushstrokes to express the Zen
+mind. It is associated with enlightenment, emptiness, freedom, and
+no-mind. The symbol is especially connected with Japanese Zen ink painting and
+calligraphy.
+
+The brush, ink, and paper used for an ensō are related to the tools of
+Japanese calligraphy and *sumi-e* ink wash painting. Drawing an ensō can be a
+disciplined-creative practice, sometimes discussed as *hitsuzendō*, “the way
+of the brush.” The act is not normally corrected after the stroke is made:
+the mark records the person and the particular moment.
+
+An ensō may be open or closed. The opening can represent movement,
+development, and the imperfection valued in *wabi-sabi*; a closed circle can
+suggest completeness. These meanings are not a single fixed definition, so
+CyberEnsō presents them as context rather than claiming to reproduce the
+traditional practice.
+
 ## A circle made in one breath
 
 An ensō is traditionally painted with one continuous brushstroke. The stroke
@@ -18,3 +38,8 @@ CyberEnsō preserves those ideas in a digital medium:
 The interface uses a quiet paper palette, restrained borders, and generous
 space around the mark. The UI should feel like a frame for the gesture, not
 another focal point.
+
+## Further reading
+
+- [Wikipedia: Ensō](https://en.wikipedia.org/wiki/Ens%C5%8D)
+- Seo, Audrey Yoshiko, *Ensō: Zen Circles of Enlightenment* (2007)
