@@ -22,15 +22,15 @@ the same input creates the same mark again.
 
 ## How it works
 
-1. The Vue runtime mounts the app into `#app`.
-2. The editor stores title, author, source style, text, and direction as
-   reactive state.
+1. The static pages share one responsive stylesheet and one browser module.
+2. The editor stores title, author, text, and direction in ordinary form
+   state.
 3. The text is hashed in the browser. The resulting values control arc
    radius, endpoints, and subtle variation.
 4. The renderer emits an SVG made from layered `<path>` elements. Each path
    is an open, rounded arc rather than a perfect circle.
-5. The download actions serialize that SVG directly or rasterize a copy to
-   PNG with the browser canvas.
+5. The download action serializes that SVG directly. Saved work is stored in
+   browser `localStorage` and can be reopened from History.
 
 This design keeps the output crisp at any size and makes the artwork easy to
 inspect: the generated SVG is the actual drawing, not a screenshot.
@@ -39,10 +39,13 @@ inspect: the generated SVG is the actual drawing, not a screenshot.
 
 ```text
 .
-├── index.html                 # Static app entry point and metadata
+├── index.html                 # Home page
+├── create.html                # Connected editor page
+├── history.html               # Local saved-work page
+├── about.html                 # Ensō and hashing explanation
 ├── assets/
-│   ├── index-CF1CkH1m.js     # Production Vue bundle
-│   ├── index-Bpd4tjvV.css     # Visual system and responsive layout
+│   ├── app.js                 # Hashing, SVG generation, and history logic
+│   ├── app.css                # Shared visual system and responsive layout
 │   ├── manifest.json          # PWA metadata
 │   └── icons and enso.png     # Favicons and social preview artwork
 ├── docs/
@@ -51,11 +54,8 @@ inspect: the generated SVG is the actual drawing, not a screenshot.
 └── README.md
 ```
 
-The JavaScript bundle is currently kept as a production artifact because this
-repository started from a static export. The CSS is maintained separately so
-the visual design can evolve without changing the generator logic. A future
-source rebuild can replace the bundle while keeping the same public entry
-point.
+The older exported bundle remains in `assets/` only as historical material;
+the live pages use `app.js` and do not depend on the old daily-image URLs.
 
 ## Run locally
 
@@ -65,7 +65,8 @@ Serve the directory over HTTP so the ES module and asset paths work:
 py -m http.server 4173
 ```
 
-Open <http://localhost:4173/>.
+Open <http://localhost:4173/>. The editor, history, and about pages are
+available at `/create.html`, `/history.html`, and `/about.html`.
 
 ## Deploy
 

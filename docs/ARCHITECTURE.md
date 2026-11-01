@@ -2,32 +2,33 @@
 
 ## Runtime
 
-CyberEnsō is a static single-page application. `index.html` loads the bundled
-Vue runtime from `assets/index-CF1CkH1m.js` and the maintained design layer from
-`assets/index-Bpd4tjvV.css`. Vue mounts into the empty `#app` element and owns
-the interactive DOM after startup.
+CyberEnsō is a static multi-page application. `index.html`, `create.html`,
+`history.html`, and `about.html` are separate entry points connected by the
+shared navigation. Each page loads `assets/app.js` and `assets/app.css`.
+There is no framework runtime or server dependency.
 
-The bundle contains the generator, editor, daily view, and download actions.
-The stylesheet is intentionally separate from the bundle so layout, color,
-type, responsive behavior, and visual polish can be changed without
-rebuilding the generator.
+The old compiled export in `assets/index-CF1CkH1m.js` is not used by the live
+pages. Keeping the current logic in a small readable module makes the hashing,
+SVG generation, navigation, and history behavior easy to maintain.
 
 ## Data flow
 
 ```text
 editor fields
     ↓
-reactive app state
+browser form state
     ↓
 text hash / seeded values
     ↓
 SVG arc paths
     ↓
 screen preview → SVG download
-                 → canvas → PNG download
+                 → localStorage history
 ```
 
-No user text is sent to an API. The browser does all hashing and rendering.
+No user text is sent to an API. The browser does all hashing, rendering, and
+history storage. An item in History links back to the editor with its local
+record ID.
 
 ## Deployment
 
