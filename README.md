@@ -23,19 +23,20 @@ circle may suggest movement and the beauty of imperfection; a closed circle
 may suggest completeness. See the [Wikipedia article on Ensō](https://en.wikipedia.org/wiki/Ens%C5%8D)
 for an overview and references.
 
-CyberEnsō translates that idea into a deterministic digital process. The
-content is hashed, and the hash becomes the seed for a family of slightly
-different arcs. A small change in the input creates a different mark, while
-the same input creates the same mark again.
+CyberEnsō translates that idea into a digital process. The content is hashed,
+and the digest becomes the digit stream for a family of layered arcs. A small
+change in the input creates a different mark; the original generator also
+adds small random endpoint variations so repeated renders retain an organic,
+hand-made quality.
 
 ## How it works
 
 1. The static pages share one responsive stylesheet and one browser module.
 2. The editor stores title, author, text, and direction in ordinary form
    state.
-3. The text is hashed in the browser. The resulting values control arc
-   radius, endpoints, and subtle variation.
-4. The renderer emits an SVG made from layered `<path>` elements. Each path
+3. The text is hashed in the browser with the Web Crypto SHA-256 API. The
+   digest bytes become the digit stream used by the original-style arc logic.
+4. The renderer emits an SVG made from 60 layered `<path>` elements. Each path
    is an open, rounded arc rather than a perfect circle.
 5. The download action serializes that SVG directly. Saved work is stored in
    browser `localStorage` and can be reopened from History.

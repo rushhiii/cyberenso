@@ -2,16 +2,16 @@
 <html lang="en">
 <head>
   <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="CyberEnsō turns words into deterministic digital brushstrokes.">
+  <meta name="description" content="CyberEnsō turns words into digest-driven digital brushstrokes.">
   <title>CyberEnsō — Make a mark</title><link rel="stylesheet" href="assets/app.css">
 </head>
 <body>
-  <header class="shell nav"><a class="brand" href="index.html">Cyber<span>Ensō</span></a><button class="menu" aria-label="Toggle navigation">☰</button><nav class="nav-links"><a class="active" href="index.html">Home</a><a href="create.html">Create</a><a href="history.html">History</a><a href="about.html">About</a></nav></header>
+  <header class="shell nav"><a class="brand" href="index.html">Cyber<span>Ensō</span></a><button class="menu" aria-label="Toggle navigation">☰</button><nav class="nav-links"><a class="active" href="index.html">Home</a><a href="create.html">Create</a><a href="history.html">History</a><a href="about.html">About</a><button class="theme-toggle" id="theme-toggle">Dark</button></nav></header>
   <main>
     <section class="shell hero"><div><p class="eyebrow">A digital gesture</p><h1>Turn a thought into a mark.</h1><p class="lead">CyberEnsō transforms your words into a unique, repeatable brushstroke. A quiet space to write, reflect, and make something that belongs only to this moment.</p><div class="actions"><a class="button" href="create.html">Create an Ensō</a><a class="button ghost" href="about.html">How it works</a></div></div><div class="art-card" id="home-art"></div></section>
-    <section class="shell section"><div class="section-head"><h2>Make space for the process.</h2><p>An ensō is not a perfect circle. It is the trace of one breath, one movement, one state of mind.</p></div><div class="cards"><article class="card"><h3>01 · Write</h3><p>Start with a poem, a thought, or a few honest words. Nothing leaves your browser.</p></article><article class="card"><h3>02 · Transform</h3><p>Your text becomes a stable seed. Change a word and the gesture changes with it.</p></article><article class="card"><h3>03 · Keep</h3><p>Save a moment to local history, or download a crisp SVG or PNG to keep forever.</p></article></div></section>
+    <section class="shell section"><div class="section-head"><h2>Make space for the process.</h2><p>An ensō is not a perfect circle. It is the trace of one breath, one movement, one state of mind.</p></div><div class="cards"><article class="card"><h3>01 · Write</h3><p>Start with a poem, a thought, or a few honest words. Nothing leaves your browser.</p></article><article class="card"><h3>02 · Transform</h3><p>Your text becomes a digest-driven gesture. Change a word and the shape changes with it.</p></article><article class="card"><h3>03 · Keep</h3><p>Save a moment to local history, or download a crisp SVG to keep forever.</p></article></div></section>
   </main>
   <footer class="shell footer">CyberEnsō · a browser-only generative art tool</footer>
-  <script src="assets/app.js?v=25a53a3"></script><script>document.querySelector("#home-art").innerHTML=createSvg("A quiet mind makes room");</script>
+  <script src="assets/app.js?v=dark2"></script><script>createSvg("A quiet mind makes room").then((svg) => { document.querySelector("#home-art").innerHTML = svg; });</script>
 </body>
 </html>

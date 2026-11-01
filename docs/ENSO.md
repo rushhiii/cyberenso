@@ -32,7 +32,7 @@ CyberEnsō preserves those ideas in a digital medium:
 - **Open arcs** keep the mark from becoming a mathematically perfect ring.
 - **Layered paths** suggest the changing pressure of a brush.
 - **Hash-derived variation** makes each text input produce its own gesture.
-- **A stable seed** means the gesture can be revisited rather than lost.
+- **Local digesting** keeps the text in the browser while shaping the mark.
 - **SVG output** keeps the mark expressive and sharp at every scale.
 
 The interface uses a quiet paper palette, restrained borders, and generous
