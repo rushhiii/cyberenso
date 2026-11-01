@@ -1,4 +1,5 @@
 const STORAGE_KEY = "cyberenso-history";
+const DEFAULT_CONTENT = "A quiet mind makes room.";
 
 function hashText(text) {
   let hash = 2166136261;
@@ -80,7 +81,14 @@ function initCreate() {
   const update = () => { canvas.innerHTML = createSvg(content.value, reverse); status.textContent = `${content.value.length} characters · deterministic seed ${hashText(content.value).toString(16)}`; };
   form.addEventListener("input", update);
   document.querySelector("#reverse").addEventListener("click", () => { reverse = !reverse; update(); });
-  document.querySelector("#reset").addEventListener("click", () => { form.reset(); reverse = false; update(); });
+  document.querySelector("#reset").addEventListener("click", () => {
+    title.value = "";
+    author.value = "";
+    content.value = DEFAULT_CONTENT;
+    reverse = false;
+    update();
+    status.textContent = "Editor reset to a new blank Ensō.";
+  });
   document.querySelector("#save").addEventListener("click", () => { const item = { id: crypto.randomUUID(), title: title.value || "Untitled Ensō", author: author.value, content: content.value, svg: createSvg(content.value, reverse), created: new Date().toISOString() }; saveHistory(item); status.textContent = "Saved to this browser's history."; });
   document.querySelector("#download-svg").addEventListener("click", () => download("cyberenso.svg", canvas.innerHTML, "image/svg+xml"));
   update();

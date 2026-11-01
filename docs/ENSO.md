@@ -43,3 +43,13 @@ another focal point.
 
 - [Wikipedia: Ensō](https://en.wikipedia.org/wiki/Ens%C5%8D)
 - Seo, Audrey Yoshiko, *Ensō: Zen Circles of Enlightenment* (2007)
+
+## Original CyberEnsō project
+
+This implementation is inspired by and credits the original [CyberEnsō Ensō
+Generator](https://enso.utsob.me/) created by **Utsob**. The original
+project's concept of hashing the written content as a destructive process,
+analogous to clearing the mind before painting, is part of this project's
+creative lineage. See the [original project discussion on
+r/generative](https://www.reddit.com/r/generative/comments/r2joz9/an_ens%C5%8D_generator/)
+for additional context.

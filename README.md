@@ -87,6 +87,18 @@ backend. Vercel serves `index.html` and the files in `assets/` directly.
 
 ## Credits
 
+This project is a redesign and connected multi-page implementation inspired
+by the original [CyberEnsō Ensō Generator](https://enso.utsob.me/) created by
+**Utsob**. The original project introduced the idea of hashing the text as a
+destructive process and an analogy for clearing the mind before painting an
+Ensō. Credit and context are also documented in the app's [About page](about.html).
+
+Further references:
+
+- [Original CyberEnsō by Utsob](https://enso.utsob.me/)
+- [Original project discussion on r/generative](https://www.reddit.com/r/generative/comments/r2joz9/an_ens%C5%8D_generator/)
+- [Wikipedia: Ensō](https://en.wikipedia.org/wiki/Ens%C5%8D)
+
 The poem content is part of the app's sample data. The background idea of an
-ensō belongs to Zen calligraphy; CyberEnsō is a contemporary digital
+ensō belongs to Zen calligraphy; this project is a contemporary digital
 interpretation, not a replacement for the traditional practice.
